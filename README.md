@@ -5,10 +5,12 @@ This project is for the Machine Vision of a corn hole playing robot.
 #Setup
 
 You need the following:
-	1. Windows SDK 
-	2. Kinect SDK
-	3. OpenGL
-	4. GLEW
-	5. freeglut
+<ol>
+<li>Windows SDK</li>
+<li>Kinect SDK</li>
+<li>OpenGL</li>
+<li>GLEW</li>
+<li>freeglut</li>
+</ol>
 
 Currently displays a 3d point cloud of what the kinect is looking at
