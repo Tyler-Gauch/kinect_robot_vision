@@ -6,7 +6,6 @@ void getKinectData() {
 }
 void drawKinectData() {
 	getKinectData();
-	rotateCamera();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glBegin(GL_POINTS);
 	for (int i = 0; i < kinect_width*kinect_height; ++i) {
@@ -16,21 +15,12 @@ void drawKinectData() {
 	glEnd();
 }
 
-void rotateCamera()
-{
-	static double angle = 0;
-	static double radius = 3;
-	double x = radius*sin(angle);
-	double z = radius*(1 - cos(angle)) - radius / 2;
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	gluLookAt(x,0,z,0,0,radius/2,0,1,0);
-	angle += 0.05;
-}
-
 void draw()
 {
 	drawKinectData();
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	gluLookAt(x, y, z, 0, 0, radius / 2, 0, 1, 0);
 	glutSwapBuffers();
 }
 
@@ -48,6 +38,9 @@ bool initGlut(int argc, char* argv[])
 	glewInit();
 	glutDisplayFunc(draw);
 	glutIdleFunc(draw);
+	glutSpecialFunc(processKeys);
+	glutMouseFunc(mouseButton);
+	glutMotionFunc(mouseMove);
 	return true;
 }
 
@@ -67,13 +60,64 @@ bool initOpenGL()
 	glViewport(0, 0, kinect_width, kinect_height);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(45, kinect_width/(GLdouble) kinect_height, 0.1, 1000);
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	gluLookAt(0,0,0,0,0,1,0,1,0);
+	gluPerspective(45, kinect_width / (GLdouble)kinect_height, 0.1, 1000);
+
+	// OpenGL init
+	glEnable(GL_DEPTH_TEST);
 
 	return true;
 }
+
+void mouseButton(int button, int state, int x, int y)
+{
+	if (button == GLUT_LEFT_BUTTON)
+	{
+		if (state == GLUT_UP)
+		{
+			angle += deltaAngle;
+			xOrigin = -1;
+		}
+		else
+		{
+			xOrigin = x;
+		}
+	}
+}
+
+void mouseMove(int xx, int yy)
+{
+	if (xOrigin >= 0)
+	{
+		//update the deltaAngle
+		deltaAngle = ((xx - xOrigin)) * 0.001f;
+		//update cameras direction
+		x = radius * sin(angle + deltaAngle);
+		z = radius * (1 - cos(angle + deltaAngle)) - radius / 2;
+	}
+}
+
+void processKeys(int key, int xx, int yy)
+{
+	float fraction = .1f;
+	switch (key)
+	{
+		case GLUT_KEY_RIGHT:
+			kinect.move(5);
+			break;
+		case GLUT_KEY_LEFT:
+			kinect.move(-5);
+			break;
+		case GLUT_KEY_UP:
+			x += lx * fraction;
+			z += lz * fraction;
+			break;
+		case GLUT_KEY_DOWN:
+			x -= lx * fraction;
+			z -= lz * fraction;
+			break;
+	}
+}
+
 
 int main(int argc, char * argv[])
 {
